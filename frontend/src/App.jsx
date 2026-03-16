@@ -98,7 +98,7 @@ function App() {
           </p>
 
           {/* Module Tabs */}
-          <div className="flex flex-wrap justify-center gap-4 mb-12">
+          <div className="flex flex-wrap justify-center gap-4 mb-10">
             <button
               onClick={() => handleModuleSwitch('friction')}
               className={`px-6 py-3 rounded-lg font-semibold shadow-md transition-all ${
@@ -130,6 +130,116 @@ function App() {
               🚀 RFQ Triage Agent
             </button>
           </div>
+
+          {/* Module Intro Card */}
+          {activeModule === 'friction' && (
+            <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-md border border-cyan-100 overflow-hidden text-left mb-2">
+              <div className="bg-primary-600 px-6 py-3 flex items-center gap-3">
+                <span className="text-2xl">💰</span>
+                <div>
+                  <p className="text-white font-bold text-lg leading-tight">Cost of Friction Rechner</p>
+                  <p className="text-cyan-100 text-sm">Versteckte Margen-Fresser in Ihrem Fertigungsbetrieb sichtbar machen</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+                <div className="px-5 py-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Das Problem</p>
+                  <p className="text-sm text-gray-700">Operative Reibung in Vertrieb, Beschaffung und Produktion kostet Fertigungsbetriebe jährlich 8–15 % der Marge — ohne dass diese Verluste je klar beziffert werden.</p>
+                </div>
+                <div className="px-5 py-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Ihr Vorteil</p>
+                  <p className="text-sm text-gray-700">In 5 Minuten erhalten Sie eine konkrete Zahl: Wie viel € Marge verlieren Sie jährlich? Wo liegt das größte Einsparpotenzial? Wie schnell amortisiert sich eine Verbesserung?</p>
+                </div>
+                <div className="px-5 py-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Im Bericht enthalten</p>
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    <li>→ Kosten nach Symptom-Clustern (ETO, PDF, BOM)</li>
+                    <li>→ Margenpotenzial & Zielmarge</li>
+                    <li>→ Priorisierte Handlungsempfehlungen</li>
+                    <li>→ ROI-Projektion mit Partflow.net</li>
+                  </ul>
+                </div>
+                <div className="px-5 py-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Aufwand & Ergebnis</p>
+                  <p className="text-sm text-gray-700 mb-2"><span className="font-semibold text-primary-600">~5 Minuten</span> Fragebogen ausfüllen</p>
+                  <p className="text-sm text-gray-700">Ergebnis: Mehrseitiger PDF-Report, sofort druckfertig — kostenlos als Lead-Magnet.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeModule === 'bom' && (
+            <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-md border border-purple-100 overflow-hidden text-left mb-2">
+              <div className="bg-purple-600 px-6 py-3 flex items-center gap-3">
+                <span className="text-2xl">🎯</span>
+                <div>
+                  <p className="text-white font-bold text-lg leading-tight">BOM Risk Sentinel</p>
+                  <p className="text-purple-200 text-sm">Lieferkettenrisiken in Stücklisten automatisch erkennen und bewerten</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+                <div className="px-5 py-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Das Problem</p>
+                  <p className="text-sm text-gray-700">Stücklisten mit hunderten Positionen enthalten unsichtbare Zeitbomben: Single-Source-Teile, EOL-Bauteile und Positionen mit 20+ Wochen Lieferzeit gefährden ganze Produktionslinien.</p>
+                </div>
+                <div className="px-5 py-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Ihr Vorteil</p>
+                  <p className="text-sm text-gray-700">Laden Sie Ihre BOM (Excel/CSV) hoch — die Analyse liefert in Sekunden einen vollständigen Risiko-Score je Position, priorisierte Kritikalität und geschätzte Folgekosten.</p>
+                </div>
+                <div className="px-5 py-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Im Bericht enthalten</p>
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    <li>→ Risikoverteilung (Kritisch / Hoch / Mittel)</li>
+                    <li>→ Top-10 kritische Bauteile mit Score</li>
+                    <li>→ Geschätzte Risikokosten pro Jahr</li>
+                    <li>→ Priorisierte Handlungsempfehlungen</li>
+                  </ul>
+                </div>
+                <div className="px-5 py-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Aufwand & Ergebnis</p>
+                  <p className="text-sm text-gray-700 mb-2"><span className="font-semibold text-purple-600">~2 Minuten</span> Upload + Spalten-Mapping</p>
+                  <p className="text-sm text-gray-700">Ergebnis: Druckfertiger PDF-Report mit vollständiger Risikomatrix — kostenlos.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeModule === 'rfq' && (
+            <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-md border border-orange-100 overflow-hidden text-left mb-2">
+              <div className="bg-orange-600 px-6 py-3 flex items-center gap-3">
+                <span className="text-2xl">🚀</span>
+                <div>
+                  <p className="text-white font-bold text-lg leading-tight">RFQ Triage Agent</p>
+                  <p className="text-orange-100 text-sm">Anfragen in Minuten bewerten — GO oder NO-GO, bevor Sie einen Stift ansetzen</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+                <div className="px-5 py-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Das Problem</p>
+                  <p className="text-sm text-gray-700">Die Erstbewertung einer Anfrage kostet 30–120 Minuten Vertriebszeit — oft für Anfragen, die man nie hätte annehmen sollen. Schlechte Triage bedeutet vergeudete Kalkulations-Ressourcen.</p>
+                </div>
+                <div className="px-5 py-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Ihr Vorteil</p>
+                  <p className="text-sm text-gray-700">PDF, Text oder BOM hochladen — die KI extrahiert alle Positionen, schätzt Aufwand und Win-Wahrscheinlichkeit und gibt eine klare GO / MAYBE / NO-GO-Empfehlung.</p>
+                </div>
+                <div className="px-5 py-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Im Bericht enthalten</p>
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    <li>→ GO / NO-GO Entscheidung + Begründung</li>
+                    <li>→ Alle Positionen strukturiert extrahiert</li>
+                    <li>→ Stärken, Risiken & offene Fragen</li>
+                    <li>→ Antwort-Template & Partflow-Empfehlung</li>
+                  </ul>
+                </div>
+                <div className="px-5 py-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Aufwand & Ergebnis</p>
+                  <p className="text-sm text-gray-700 mb-2"><span className="font-semibold text-orange-600">~1 Minute</span> Upload + KI-Analyse</p>
+                  <p className="text-sm text-gray-700">Ergebnis: Strukturierte Triage-Analyse mit PDF-Report und KI-generiertem Antwort-Entwurf.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
 
@@ -151,7 +261,7 @@ function App() {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12 px-4 mt-20">
         <div className="max-w-5xl mx-auto text-center">
-          <p>© 2025 Partflow.net - Powered by DFSC Engineering. Alle Rechte vorbehalten.</p>
+          <p>© {new Date().getFullYear()} Partflow.net · Powered by DFSC Engineering · Alle Rechte vorbehalten.</p>
         </div>
       </footer>
     </div>
