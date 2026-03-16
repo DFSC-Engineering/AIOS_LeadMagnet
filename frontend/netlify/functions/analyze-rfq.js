@@ -1,0 +1,173 @@
+import Anthropic from '@anthropic-ai/sdk'
+
+const ANALYSIS_PROMPT = `Du bist ein erfahrener industrieller Einkaufs- und Vertriebsexperte für den deutschen Mittelstand.
+Analysiere die vorliegende Anfrage (RFQ / Ausschreibung) und extrahiere alle relevanten Informationen.
+
+Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt, ohne Markdown-Code-Blöcke, ohne Erklärungen davor oder danach.
+
+Das JSON-Objekt muss diese exakte Struktur haben:
+{
+  "projektInfo": {
+    "titel": "Titel der Anfrage oder 'Unbekannt'",
+    "kunde": "Firmenname des Kunden oder 'Unbekannt'",
+    "referenzNummer": "RFQ-Nummer oder Auftragsnummer oder null",
+    "anfragesDatum": "Datum der Anfrage oder null",
+    "angebotsFrist": "Deadline für Angebot oder null",
+    "ansprechpartner": "Name des Ansprechpartners oder null"
+  },
+  "positionen": [
+    {
+      "pos": 1,
+      "teilenummer": "Teilenummer oder Zeichnungsnummer",
+      "beschreibung": "Beschreibung des Bauteils",
+      "menge": 10,
+      "einheit": "Stück",
+      "material": "Werkstoff/Material oder null",
+      "oberflaechenbehandlung": "Beschichtung/Oberfläche oder null",
+      "toleranz": "Toleranzklasse oder null",
+      "zeichnungsnummer": "Zeichnungsnummer falls vorhanden oder null",
+      "liefertermin": "Gewünschter Liefertermin oder null"
+    }
+  ],
+  "technischeAnforderungen": [
+    "Liste konkreter technischer Anforderungen (Normen, Zertifizierungen, Prüfungen etc.)"
+  ],
+  "lieferbedingungen": {
+    "liefertermin": "Gewünschter Gesamtliefertermin",
+    "lieferort": "Lieferadresse oder Werk",
+    "incoterms": "Incoterms falls angegeben oder null",
+    "verpackung": "Verpackungsvorschriften oder null",
+    "zahlungsziel": "Zahlungsbedingungen oder null"
+  },
+  "triage": {
+    "empfehlung": "GO oder MAYBE oder NO_GO",
+    "begruendung": "2-3 Sätze Begründung der Empfehlung auf Deutsch",
+    "winWahrscheinlichkeit": 70,
+    "aufwandsSchaetzung": {
+      "stunden": 8,
+      "komplexitaet": "HOCH oder MITTEL oder NIEDRIG",
+      "begruendung": "Kurze Begründung des Aufwands"
+    },
+    "risiken": [
+      "Konkrete Risiken für die Angebotsabgabe"
+    ],
+    "staerken": [
+      "Punkte, die für eine Angebotsabgabe sprechen"
+    ]
+  },
+  "offeneFragen": [
+    "Liste offener Fragen oder fehlender Informationen, die vor Angebotsabgabe geklärt werden sollten"
+  ],
+  "partflowRelevanz": {
+    "beschaffbareParts": 0,
+    "empfehlung": "Konkrete Aussage wie viele Positionen über Partflow.net in 24h beschafft werden können",
+    "vorteile": ["Spezifische Vorteile von Partflow für diese Anfrage"]
+  }
+}`
+
+export const handler = async (event) => {
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, body: 'Method Not Allowed' }
+  }
+
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'API-Konfiguration fehlt. Bitte ANTHROPIC_API_KEY als Netlify Environment Variable setzen.' })
+    }
+  }
+
+  let body
+  try {
+    body = JSON.parse(event.body)
+  } catch {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Ungültiges JSON im Request Body' }) }
+  }
+
+  const { inputType, content } = body
+
+  if (!inputType || !content) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'inputType und content sind erforderlich' }) }
+  }
+
+  try {
+    const client = new Anthropic({ apiKey })
+
+    let messageContent = []
+
+    if (inputType === 'pdf') {
+      // Claude liest PDF nativ via base64
+      messageContent = [
+        {
+          type: 'document',
+          source: {
+            type: 'base64',
+            media_type: 'application/pdf',
+            data: content.pdfBase64
+          }
+        },
+        {
+          type: 'text',
+          text: ANALYSIS_PROMPT
+        }
+      ]
+    } else if (inputType === 'text') {
+      messageContent = [
+        {
+          type: 'text',
+          text: `${ANALYSIS_PROMPT}\n\n---\nRFQ / ANFRAGE:\n${content.text}`
+        }
+      ]
+    } else if (inputType === 'bom') {
+      // BOM als strukturierter Text
+      const bomText = content.bomData
+        .map((row, i) => `Position ${i + 1}: ${JSON.stringify(row)}`)
+        .join('\n')
+      messageContent = [
+        {
+          type: 'text',
+          text: `${ANALYSIS_PROMPT}\n\n---\nSTÜCKLISTEN-DATEN (aus Upload):\n${bomText}`
+        }
+      ]
+    } else {
+      return { statusCode: 400, body: JSON.stringify({ error: `Unbekannter inputType: ${inputType}` }) }
+    }
+
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 4096,
+      messages: [{ role: 'user', content: messageContent }]
+    })
+
+    const rawText = response.content[0].text.trim()
+
+    // JSON aus Antwort extrahieren (Claude könnte Code-Blöcke verwenden)
+    let jsonText = rawText
+    const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)
+    if (jsonMatch) {
+      jsonText = jsonMatch[1].trim()
+    } else {
+      // Versuche direkt das JSON-Objekt zu finden
+      const objMatch = rawText.match(/\{[\s\S]*\}/)
+      if (objMatch) jsonText = objMatch[0]
+    }
+
+    const result = JSON.parse(jsonText)
+
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(result)
+    }
+  } catch (error) {
+    console.error('RFQ Analysis Error:', error)
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        error: `Analyse fehlgeschlagen: ${error.message}`,
+        details: error.name === 'SyntaxError' ? 'JSON-Parsing der KI-Antwort fehlgeschlagen' : undefined
+      })
+    }
+  }
+}

@@ -1,0 +1,6 @@
+Part Number,Description,Quantity,Supplier,Lead Time,Unit Price,Annual Volume,Lifecycle Status,Category
+ABC-001,Custom Housing,1,Supplier A,12,125.50,500,Active,Mechanical
+DEF-002,Electronics Module,2,Supplier A,16,450.00,200,NRND,Electronic
+GHI-003,Standard Screw,4,Supplier B,2,1.50,5000,Active,Standard
+JKL-004,Obsolete Chip,1,Supplier C,20,85.00,100,EOL,Electronic
+MNO-005,Long Lead Capacitor,2,Supplier D,18,12.00,800,Active,Electronic
