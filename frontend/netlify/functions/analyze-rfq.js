@@ -1,4 +1,6 @@
-import Anthropic from '@anthropic-ai/sdk'
+// Kein externes SDK nötig — Node 18 fetch ist eingebaut
+const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages'
+const MODEL = 'claude-sonnet-4-6'
 
 const ANALYSIS_PROMPT = `Du bist ein erfahrener industrieller Einkaufs- und Vertriebsexperte für den deutschen Mittelstand.
 Analysiere die vorliegende Anfrage (RFQ / Ausschreibung) und extrahiere alle relevanten Informationen.
@@ -92,12 +94,16 @@ export const handler = async (event) => {
   }
 
   try {
-    const client = new Anthropic({ apiKey })
-
     let messageContent = []
+    const headers = {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01'
+    }
 
     if (inputType === 'pdf') {
-      // Claude liest PDF nativ via base64
+      // PDF-Support benötigt Beta-Header
+      headers['anthropic-beta'] = 'pdfs-2024-09-25'
       messageContent = [
         {
           type: 'document',
@@ -120,7 +126,6 @@ export const handler = async (event) => {
         }
       ]
     } else if (inputType === 'bom') {
-      // BOM als strukturierter Text
       const bomText = content.bomData
         .map((row, i) => `Position ${i + 1}: ${JSON.stringify(row)}`)
         .join('\n')
@@ -134,21 +139,30 @@ export const handler = async (event) => {
       return { statusCode: 400, body: JSON.stringify({ error: `Unbekannter inputType: ${inputType}` }) }
     }
 
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 4096,
-      messages: [{ role: 'user', content: messageContent }]
+    const response = await fetch(CLAUDE_API_URL, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: 4096,
+        messages: [{ role: 'user', content: messageContent }]
+      })
     })
 
-    const rawText = response.content[0].text.trim()
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}))
+      throw new Error(errData.error?.message || `Claude API Fehler: ${response.status}`)
+    }
 
-    // JSON aus Antwort extrahieren (Claude könnte Code-Blöcke verwenden)
+    const apiResponse = await response.json()
+    const rawText = apiResponse.content[0].text.trim()
+
+    // JSON aus Antwort extrahieren (falls Claude doch Code-Blöcke verwendet)
     let jsonText = rawText
     const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)
     if (jsonMatch) {
       jsonText = jsonMatch[1].trim()
     } else {
-      // Versuche direkt das JSON-Objekt zu finden
       const objMatch = rawText.match(/\{[\s\S]*\}/)
       if (objMatch) jsonText = objMatch[0]
     }

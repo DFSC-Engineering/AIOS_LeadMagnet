@@ -1,4 +1,6 @@
-import Anthropic from '@anthropic-ai/sdk'
+// Kein externes SDK nötig — Node 18 fetch ist eingebaut
+const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages'
+const MODEL = 'claude-haiku-4-5-20251001'
 
 export const handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -44,18 +46,31 @@ Stil: Professionell, höflich, geschäftlich. Kein Firmenname für den Absender 
 Länge: 150-250 Wörter. Auf Deutsch.`
 
   try {
-    const client = new Anthropic({ apiKey })
-
-    const response = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
-      messages: [{ role: 'user', content: prompt }]
+    const response = await fetch(CLAUDE_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: 1024,
+        messages: [{ role: 'user', content: prompt }]
+      })
     })
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}))
+      throw new Error(errData.error?.message || `Claude API Fehler: ${response.status}`)
+    }
+
+    const apiResponse = await response.json()
 
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ template: response.content[0].text })
+      body: JSON.stringify({ template: apiResponse.content[0].text })
     }
   } catch (error) {
     console.error('Generate Response Error:', error)

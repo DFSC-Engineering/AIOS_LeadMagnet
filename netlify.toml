@@ -5,7 +5,6 @@
 
 [functions]
   directory = "frontend/netlify/functions"
-  node_bundler = "esbuild"
 
 # Redirect all requests to index.html for SPA routing
 [[redirects]]
