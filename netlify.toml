@@ -4,7 +4,7 @@
   publish = "dist"
 
 [functions]
-  directory = "frontend/netlify/functions"
+  directory = "netlify/functions"
 
 # Redirect all requests to index.html for SPA routing
 [[redirects]]
