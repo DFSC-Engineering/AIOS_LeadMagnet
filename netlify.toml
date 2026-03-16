@@ -14,7 +14,7 @@
 
 # Build environment
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "20"
 
 # Headers for security
 [[headers]]

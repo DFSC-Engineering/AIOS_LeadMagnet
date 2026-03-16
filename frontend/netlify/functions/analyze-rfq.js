@@ -1,6 +1,6 @@
 // CommonJS — kein Import, kein Bundler, Node 18 fetch ist eingebaut
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages'
-const MODEL = 'claude-sonnet-4-6'
+const MODEL = 'claude-haiku-4-5-20251001'
 
 const ANALYSIS_PROMPT = `Du bist ein erfahrener industrieller Einkaufs- und Vertriebsexperte für den deutschen Mittelstand.
 Analysiere die vorliegende Anfrage (RFQ / Ausschreibung) und extrahiere alle relevanten Informationen.
@@ -143,7 +143,7 @@ exports.handler = async (event) => {
       headers: headers,
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 4096,
+        max_tokens: 2000,
         messages: [{ role: 'user', content: messageContent }]
       })
     })
