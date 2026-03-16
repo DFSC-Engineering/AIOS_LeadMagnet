@@ -35,9 +35,9 @@ export default function BomRiskSentinel() {
     setFileData(null)
   }
 
-  const handleDownloadPDF = (reportData) => {
+  const handleDownloadPDF = async (reportData) => {
     try {
-      const result = generateBomRiskPDF(reportData)
+      const result = await generateBomRiskPDF(reportData)
       if (result.success) {
         // Success notification (optional: you could add a toast notification here)
         console.log(`✅ PDF created successfully: ${result.fileName} (${result.pages} pages)`)

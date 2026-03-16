@@ -50,8 +50,8 @@ export default function RfqAnalysisDashboard({ analysisResult, onReset }) {
 
   const cfg = triageConfig[empfehlung] || triageConfig.MAYBE
 
-  const handleLeadSubmit = (leadData) => {
-    generateRfqPDF(analysisResult, leadData)
+  const handleLeadSubmit = async (leadData) => {
+    await generateRfqPDF(analysisResult, leadData)
     setShowLeadModal(false)
     setShowSuccessMessage(true)
     setTimeout(() => setShowSuccessMessage(false), 6000)

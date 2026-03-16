@@ -1,404 +1,422 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { loadPartflowLogo, LOGO_PDF, CURRENT_YEAR, addStandardFooter, addPageNumbers } from './pdfHelpers'
 
-const COLORS = {
-  primary: [0, 122, 204],
-  orange: [234, 88, 12],
-  amber: [217, 119, 6],
-  green: [34, 197, 94],
-  red: [220, 38, 38],
-  yellow: [234, 179, 8],
-  gray: [107, 114, 128],
-  lightGray: [243, 244, 246],
-  white: [255, 255, 255],
-  darkGray: [31, 41, 55]
+const C = {
+  orange:    [194, 65, 12],
+  orangeLight:[254, 215, 170],
+  blue:      [0, 90, 160],
+  green:     [21, 128, 61],
+  greenBg:   [220, 252, 231],
+  red:       [185, 28, 28],
+  redBg:     [254, 226, 226],
+  amber:     [161, 98, 7],
+  amberBg:   [254, 243, 199],
+  gray:      [97, 97, 97],
+  grayLight: [245, 245, 245],
+  grayMid:   [200, 200, 200],
+  black:     [33, 33, 33],
+  white:     [255, 255, 255],
 }
 
-export function generateRfqPDF(analysisResult, leadData) {
-  try {
-    const {
-      projektInfo = {},
-      positionen = [],
-      technischeAnforderungen = [],
-      lieferbedingungen = {},
-      triage = {},
-      offeneFragen = [],
-      partflowRelevanz = {}
-    } = analysisResult
+export async function generateRfqPDF(analysisResult, leadData) {
+  const logoDataUrl = await loadPartflowLogo()
 
-    const doc = new jsPDF()
-    const pageWidth = doc.internal.pageSize.width
-    const pageHeight = doc.internal.pageSize.height
-    const margin = 20
-    let yPos = 20
+  const {
+    projektInfo = {},
+    positionen = [],
+    technischeAnforderungen = [],
+    lieferbedingungen = {},
+    triage = {},
+    offeneFragen = [],
+    partflowRelevanz = {}
+  } = analysisResult
 
-    const checkPageBreak = (needed = 30) => {
-      if (yPos + needed > pageHeight - 30) {
-        addFooter(doc, pageWidth, pageHeight, margin)
-        doc.addPage()
-        yPos = 20
-        return true
-      }
-      return false
+  const doc = new jsPDF()
+  const W = doc.internal.pageSize.width
+  const H = doc.internal.pageSize.height
+  const M = 18
+  let y = 0
+
+  const checkBreak = (needed = 30) => {
+    if (y + needed > H - 22) {
+      addStandardFooter(doc, 'RFQ Triage Analyse')
+      doc.addPage()
+      y = 18
+      return true
     }
+    return false
+  }
 
-    const drawBox = (x, y, w, h, bgColor, borderColor = null) => {
-      doc.setFillColor(...bgColor)
-      if (borderColor) {
-        doc.setDrawColor(...borderColor)
-        doc.rect(x, y, w, h, 'FD')
-      } else {
-        doc.rect(x, y, w, h, 'F')
-      }
-    }
-
-    const addSectionTitle = (title) => {
-      checkPageBreak(15)
-      doc.setFontSize(14)
-      doc.setFont('helvetica', 'bold')
-      doc.setTextColor(0, 0, 0)
-      doc.text(title, margin, yPos)
-      yPos += 2
-      doc.setDrawColor(...COLORS.orange)
-      doc.setLineWidth(0.5)
-      doc.line(margin, yPos, pageWidth - margin, yPos)
-      yPos += 10
-    }
-
-    // ==========================================
-    // PAGE 1: HEADER
-    // ==========================================
-    drawBox(0, 0, pageWidth, 45, COLORS.orange)
-
-    doc.setFillColor(...COLORS.white)
-    doc.roundedRect(15, 10, 40, 25, 2, 2, 'F')
-    doc.setFontSize(9)
+  const sectionTitle = (title) => {
+    checkBreak(18)
+    doc.setFontSize(12)
     doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...COLORS.primary)
-    doc.text('PARTFLOW', 20, 23)
+    doc.setTextColor(...C.black)
+    doc.text(title, M, y)
+    y += 2
+    doc.setDrawColor(...C.orange)
+    doc.setLineWidth(0.4)
+    doc.line(M, y, W - M, y)
+    y += 8
+  }
 
-    doc.setFontSize(22)
+  // ─────────────────────────────────────────
+  // SEITE 1: HEADER + TRIAGE-ENTSCHEIDUNG
+  // ─────────────────────────────────────────
+
+  doc.setFillColor(...C.orange)
+  doc.rect(0, 0, W, 46, 'F')
+
+  if (logoDataUrl) {
+    doc.addImage(logoDataUrl, 'PNG', M, 9, LOGO_PDF.w, LOGO_PDF.h)
+  } else {
+    doc.setFontSize(13)
     doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...COLORS.white)
-    doc.text('RFQ TRIAGE ANALYSE', pageWidth / 2, 22, { align: 'center' })
+    doc.setTextColor(...C.white)
+    doc.text('PARTFLOW', M + 2, 22)
+  }
 
-    doc.setFontSize(11)
+  doc.setFontSize(20)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(...C.white)
+  doc.text('RFQ Triage Analyse', W / 2, 20, { align: 'center' })
+  doc.setFontSize(9.5)
+  doc.setFont('helvetica', 'normal')
+  doc.text('AI Business OS  |  Anfragen-Analyse Report', W / 2, 30, { align: 'center' })
+
+  y = 54
+
+  // Projekt-Infobox
+  doc.setFillColor(...C.grayLight)
+  doc.setDrawColor(...C.grayMid)
+  doc.setLineWidth(0.3)
+  doc.rect(M, y, W - 2 * M, 28, 'FD')
+
+  const infoRows = [
+    ['Projekt:', String(projektInfo.titel || 'Unbekannt').substring(0, 65)],
+    ['Auftraggeber:', String(projektInfo.kunde || 'Unbekannt')],
+    ['Erstellt:', new Date().toLocaleDateString('de-DE', { year: 'numeric', month: 'long', day: 'numeric' })],
+  ]
+  if (projektInfo.angebotsFrist) {
+    infoRows.push(['Angebotsfrist:', projektInfo.angebotsFrist])
+  }
+
+  infoRows.forEach((row, i) => {
+    const rowY = y + 7 + i * 7
+    doc.setFontSize(8.5)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(...C.black)
+    doc.text(row[0], M + 5, rowY)
     doc.setFont('helvetica', 'normal')
-    doc.text('AI Business OS — Anfragenanalyse Report', pageWidth / 2, 32, { align: 'center' })
+    doc.setTextColor(...C.gray)
+    doc.text(row[1], M + 38, rowY)
+  })
 
-    yPos = 55
+  y += 36
 
-    // Report info box
-    drawBox(margin, yPos, pageWidth - 2 * margin, 30, COLORS.lightGray, COLORS.gray)
-    doc.setFontSize(9)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(0, 0, 0)
-    doc.text('Projekt:', margin + 5, yPos + 8)
-    doc.setFont('helvetica', 'normal')
-    const projektText = (projektInfo.titel || 'Unbekannt').substring(0, 60)
-    doc.text(projektText, margin + 30, yPos + 8)
+  // ── TRIAGE-ENTSCHEIDUNG ──
+  sectionTitle('Triage-Entscheidung')
 
-    doc.setFont('helvetica', 'bold')
-    doc.text('Auftraggeber:', margin + 5, yPos + 16)
-    doc.setFont('helvetica', 'normal')
-    doc.text(projektInfo.kunde || 'Unbekannt', margin + 40, yPos + 16)
+  const emp = triage.empfehlung || 'MAYBE'
+  const tc = emp === 'GO'     ? { bg: C.greenBg, border: C.green,  text: C.green  }
+           : emp === 'NO_GO'  ? { bg: C.redBg,   border: C.red,    text: C.red    }
+           :                    { bg: C.amberBg,  border: C.amber,  text: C.amber  }
 
-    doc.setFont('helvetica', 'bold')
-    doc.text('Erstellt:', margin + 5, yPos + 24)
-    doc.setFont('helvetica', 'normal')
-    doc.text(new Date().toLocaleDateString('de-DE', { year: 'numeric', month: 'long', day: 'numeric' }), margin + 30, yPos + 24)
+  doc.setFillColor(...tc.bg)
+  doc.setDrawColor(...tc.border)
+  doc.setLineWidth(0.5)
+  doc.rect(M, y, W - 2 * M, 42, 'FD')
 
-    if (projektInfo.angebotsFrist) {
-      doc.setFont('helvetica', 'bold')
-      doc.text('Frist:', pageWidth / 2 + 5, yPos + 8)
-      doc.setFont('helvetica', 'normal')
-      doc.text(projektInfo.angebotsFrist, pageWidth / 2 + 25, yPos + 8)
-    }
+  // Empfehlung-Badge
+  doc.setFillColor(...tc.border)
+  doc.roundedRect(M + 5, y + 8, 32, 12, 2, 2, 'F')
+  doc.setFontSize(10)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(...C.white)
+  doc.text(emp, M + 21, y + 16, { align: 'center' })
 
-    yPos += 42
+  // Win-Wahrscheinlichkeit
+  doc.setFontSize(24)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(...tc.text)
+  doc.text(`${triage.winWahrscheinlichkeit || '—'}%`, W - M - 5, y + 20, { align: 'right' })
+  doc.setFontSize(7.5)
+  doc.setFont('helvetica', 'normal')
+  doc.text('Win-Wahr.', W - M - 5, y + 28, { align: 'right' })
 
-    // ==========================================
-    // TRIAGE AMPEL
-    // ==========================================
-    addSectionTitle('TRIAGE-ENTSCHEIDUNG')
+  // Begruendung
+  doc.setFontSize(8.5)
+  doc.setFont('helvetica', 'normal')
+  doc.setTextColor(...C.black)
+  const begLines = doc.splitTextToSize(triage.begruendung || '', W - 2 * M - 58)
+  doc.text(begLines, M + 42, y + 11)
 
-    const empfehlung = triage.empfehlung || 'MAYBE'
-    const triageColors = {
-      GO: { bg: [220, 252, 231], border: COLORS.green, text: [21, 128, 61] },
-      MAYBE: { bg: [254, 243, 199], border: COLORS.yellow, text: [161, 98, 7] },
-      NO_GO: { bg: [254, 226, 226], border: COLORS.red, text: [185, 28, 28] }
-    }
-    const tc = triageColors[empfehlung] || triageColors.MAYBE
-
-    drawBox(margin, yPos, pageWidth - 2 * margin, 45, tc.bg, tc.border)
-
-    // Empfehlung Badge
-    doc.setFillColor(...tc.border)
-    doc.roundedRect(margin + 5, yPos + 8, 35, 12, 2, 2, 'F')
-    doc.setFontSize(11)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...COLORS.white)
-    doc.text(empfehlung, margin + 22, yPos + 16, { align: 'center' })
-
-    // Win-Probability
-    doc.setFontSize(22)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...tc.text)
-    doc.text(`${triage.winWahrscheinlichkeit || '—'}%`, pageWidth - margin - 5, yPos + 20, { align: 'right' })
+  // Aufwand-Zeile
+  if (triage.aufwandsSchaetzung) {
+    const as = triage.aufwandsSchaetzung
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
-    doc.text('Win-Wahr.', pageWidth - margin - 5, yPos + 28, { align: 'right' })
+    doc.setTextColor(...C.gray)
+    doc.text(
+      `Aufwand: ${as.stunden}h  |  Komplexitaet: ${as.komplexitaet || '—'}  |  ${as.begruendung || ''}`,
+      M + 6, y + 37
+    )
+  }
 
-    // Begründung
-    doc.setFontSize(9)
-    doc.setFont('helvetica', 'normal')
-    doc.setTextColor(0, 0, 0)
-    const begruendungLines = doc.splitTextToSize(triage.begruendung || '', pageWidth - 2 * margin - 60)
-    doc.text(begruendungLines, margin + 48, yPos + 12)
+  y += 52
 
-    yPos += 55
+  // ── STAERKEN & RISIKEN ──
+  if ((triage.staerken?.length > 0) || (triage.risiken?.length > 0)) {
+    checkBreak(20)
+    sectionTitle('Staerken & Risiken')
 
-    // Aufwand
-    if (triage.aufwandsSchaetzung) {
-      const as = triage.aufwandsSchaetzung
-      drawBox(margin, yPos, pageWidth - 2 * margin, 22, COLORS.lightGray)
-      doc.setFontSize(9)
+    const half = (W - 2 * M - 8) / 2
+
+    // Staerken-Spalte
+    if (triage.staerken?.length > 0) {
+      doc.setFillColor(...C.green)
+      doc.rect(M, y, half, 8, 'F')
+      doc.setFontSize(8.5)
       doc.setFont('helvetica', 'bold')
-      doc.setTextColor(0, 0, 0)
-      doc.text('Aufwand:', margin + 5, yPos + 8)
-      doc.setFont('helvetica', 'normal')
-      doc.text(`${as.stunden}h (${as.komplexitaet || '—'}) — ${as.begruendung || ''}`, margin + 30, yPos + 8)
-      yPos += 30
-    }
-
-    // ==========================================
-    // POSITIONEN TABLE
-    // ==========================================
-    if (positionen.length > 0) {
-      checkPageBreak(20)
-      addSectionTitle(`EXTRAHIERTE POSITIONEN (${positionen.length})`)
-
-      const tableData = positionen.map(pos => [
-        String(pos.pos || '—'),
-        String(pos.teilenummer || '—'),
-        String(pos.beschreibung || '—').substring(0, 50),
-        `${pos.menge || '—'} ${pos.einheit || ''}`,
-        String(pos.material || '—'),
-        String(pos.toleranz || '—')
-      ])
-
-      autoTable(doc, {
-        startY: yPos,
-        head: [['Pos.', 'Teilenr.', 'Beschreibung', 'Menge', 'Material', 'Toleranz']],
-        body: tableData,
-        theme: 'grid',
-        headStyles: {
-          fillColor: COLORS.orange,
-          textColor: COLORS.white,
-          fontStyle: 'bold',
-          fontSize: 8
-        },
-        bodyStyles: { fontSize: 7, cellPadding: 2 },
-        columnStyles: {
-          0: { cellWidth: 12, halign: 'center', fontStyle: 'bold' },
-          1: { cellWidth: 30, font: 'courier', fontSize: 6 },
-          2: { cellWidth: 65 },
-          3: { cellWidth: 22, halign: 'center' },
-          4: { cellWidth: 28 },
-          5: { cellWidth: 20, font: 'courier', fontSize: 6 }
-        }
-      })
-
-      yPos = doc.lastAutoTable.finalY + 15
-    }
-
-    // ==========================================
-    // NEW PAGE: EMPFEHLUNGEN & OFFENE FRAGEN
-    // ==========================================
-    addFooter(doc, pageWidth, pageHeight, margin)
-    doc.addPage()
-    yPos = 20
-
-    // Stärken & Risiken
-    if (triage.staerken?.length > 0 || triage.risiken?.length > 0) {
-      addSectionTitle('STÄRKEN & RISIKEN')
-
-      const halfWidth = (pageWidth - 2 * margin - 10) / 2
-
-      if (triage.staerken?.length > 0) {
-        drawBox(margin, yPos, halfWidth, 8, COLORS.green)
-        doc.setFontSize(10)
-        doc.setFont('helvetica', 'bold')
-        doc.setTextColor(...COLORS.white)
-        doc.text('STÄRKEN', margin + halfWidth / 2, yPos + 5.5, { align: 'center' })
-
-        let sy = yPos + 12
-        triage.staerken.forEach(s => {
-          const lines = doc.splitTextToSize(`+ ${s}`, halfWidth - 10)
-          doc.setFontSize(8)
-          doc.setFont('helvetica', 'normal')
-          doc.setTextColor(21, 128, 61)
-          doc.text(lines, margin + 5, sy)
-          sy += lines.length * 5 + 3
-        })
-      }
-
-      if (triage.risiken?.length > 0) {
-        const rx = margin + halfWidth + 10
-        drawBox(rx, yPos, halfWidth, 8, COLORS.red)
-        doc.setFontSize(10)
-        doc.setFont('helvetica', 'bold')
-        doc.setTextColor(...COLORS.white)
-        doc.text('RISIKEN', rx + halfWidth / 2, yPos + 5.5, { align: 'center' })
-
-        let ry = yPos + 12
-        triage.risiken.forEach(r => {
-          const lines = doc.splitTextToSize(`! ${r}`, halfWidth - 10)
-          doc.setFontSize(8)
-          doc.setFont('helvetica', 'normal')
-          doc.setTextColor(185, 28, 28)
-          doc.text(lines, rx + 5, ry)
-          ry += lines.length * 5 + 3
-        })
-      }
-
-      yPos += Math.max(
-        8 + (triage.staerken?.length || 0) * 12,
-        8 + (triage.risiken?.length || 0) * 12
-      ) + 15
-    }
-
-    // Offene Fragen
-    if (offeneFragen.length > 0) {
-      checkPageBreak(20)
-      addSectionTitle('OFFENE FRAGEN VOR ANGEBOTSABGABE')
-
-      offeneFragen.forEach((frage, idx) => {
-        checkPageBreak(12)
-        drawBox(margin, yPos, pageWidth - 2 * margin, 10, [255, 251, 235], COLORS.amber)
-        doc.setFontSize(9)
-        doc.setFont('helvetica', 'bold')
-        doc.setTextColor(...COLORS.amber)
-        doc.text(`${idx + 1}.`, margin + 5, yPos + 7)
+      doc.setTextColor(...C.white)
+      doc.text('STAERKEN', M + half / 2, y + 5.5, { align: 'center' })
+      let sy = y + 13
+      triage.staerken.forEach(s => {
+        const lines = doc.splitTextToSize('+ ' + s, half - 8)
+        doc.setFontSize(7.5)
         doc.setFont('helvetica', 'normal')
-        doc.setTextColor(0, 0, 0)
-        const fragenLines = doc.splitTextToSize(frage, pageWidth - 2 * margin - 15)
-        doc.text(fragenLines, margin + 15, yPos + 7)
-        yPos += Math.max(14, fragenLines.length * 5 + 6)
+        doc.setTextColor(...C.green)
+        doc.text(lines, M + 5, sy)
+        sy += lines.length * 4.5 + 2
       })
-
-      yPos += 10
     }
 
-    // Technische Anforderungen
-    if (technischeAnforderungen.length > 0) {
-      checkPageBreak(20)
-      addSectionTitle('TECHNISCHE ANFORDERUNGEN')
-
-      technischeAnforderungen.forEach(req => {
-        checkPageBreak(10)
-        doc.setFontSize(8)
+    // Risiken-Spalte
+    if (triage.risiken?.length > 0) {
+      const rx = M + half + 8
+      doc.setFillColor(...C.red)
+      doc.rect(rx, y, half, 8, 'F')
+      doc.setFontSize(8.5)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(...C.white)
+      doc.text('RISIKEN', rx + half / 2, y + 5.5, { align: 'center' })
+      let ry = y + 13
+      triage.risiken.forEach(r => {
+        const lines = doc.splitTextToSize('! ' + r, half - 8)
+        doc.setFontSize(7.5)
         doc.setFont('helvetica', 'normal')
-        doc.setTextColor(0, 0, 0)
-        doc.text(`• ${req}`, margin + 5, yPos)
-        yPos += 7
+        doc.setTextColor(...C.red)
+        doc.text(lines, rx + 5, ry)
+        ry += lines.length * 4.5 + 2
       })
-
-      yPos += 10
     }
 
-    // ==========================================
-    // PARTFLOW CTA PAGE
-    // ==========================================
-    addFooter(doc, pageWidth, pageHeight, margin)
-    doc.addPage()
-    yPos = 20
+    y += Math.max(
+      8 + (triage.staerken?.length || 0) * 11,
+      8 + (triage.risiken?.length || 0) * 11
+    ) + 12
+  }
 
-    drawBox(0, 0, pageWidth, pageHeight, [240, 249, 255])
+  // ── POSITIONEN-TABELLE ──
+  if (positionen.length > 0) {
+    checkBreak(24)
+    sectionTitle(`Extrahierte Positionen (${positionen.length})`)
 
-    drawBox(0, 0, pageWidth, 50, COLORS.primary)
-    doc.setFontSize(24)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...COLORS.white)
-    doc.text('NÄCHSTE SCHRITTE', pageWidth / 2, 25, { align: 'center' })
-    doc.setFontSize(12)
-    doc.setFont('helvetica', 'normal')
-    doc.text('Teile beschaffen mit Partflow.net', pageWidth / 2, 38, { align: 'center' })
-
-    yPos = 65
-
-    if (partflowRelevanz.empfehlung) {
-      drawBox(margin, yPos, pageWidth - 2 * margin, 25, COLORS.white, COLORS.primary)
-      doc.setFontSize(10)
-      doc.setFont('helvetica', 'bold')
-      doc.setTextColor(...COLORS.primary)
-      const pfLines = doc.splitTextToSize(partflowRelevanz.empfehlung, pageWidth - 2 * margin - 15)
-      doc.text(pfLines, margin + 8, yPos + 8)
-      yPos += 35
-    }
-
-    const benefits = [
-      ['⚡ 24h Angebotszeit', 'Statt 5-15 Tage Wartezeit'],
-      ['🏭 200+ Partner', 'ISO-zertifiziert in 12 Ländern'],
-      ['💰 15-30% Kosteneinsparung', 'Durch optimierte Beschaffung'],
-      ['🔗 Ein Ansprechpartner', 'Statt 5+ Lieferanten koordinieren'],
-    ]
-
-    benefits.forEach(([title, desc]) => {
-      checkPageBreak(25)
-      drawBox(margin, yPos, pageWidth - 2 * margin, 20, COLORS.white, COLORS.lightGray)
-      doc.setFontSize(10)
-      doc.setFont('helvetica', 'bold')
-      doc.setTextColor(...COLORS.primary)
-      doc.text(title, margin + 10, yPos + 8)
-      doc.setFontSize(8)
-      doc.setFont('helvetica', 'normal')
-      doc.setTextColor(...COLORS.gray)
-      doc.text(desc, margin + 10, yPos + 15)
-      yPos += 25
+    autoTable(doc, {
+      startY: y,
+      head: [['Pos.', 'Teilenr.', 'Beschreibung', 'Menge', 'Material', 'Toleranz']],
+      body: positionen.map(p => [
+        String(p.pos || '—'),
+        String(p.teilenummer || '—'),
+        String(p.beschreibung || '—').substring(0, 48),
+        `${p.menge || '—'} ${p.einheit || ''}`.trim(),
+        String(p.material || '—'),
+        String(p.toleranz || '—'),
+      ]),
+      theme: 'grid',
+      headStyles: { fillColor: C.orange, textColor: C.white, fontStyle: 'bold', fontSize: 8 },
+      bodyStyles: { fontSize: 7.5, cellPadding: 2.5 },
+      columnStyles: {
+        0: { cellWidth: 12, halign: 'center', fontStyle: 'bold' },
+        1: { cellWidth: 30, font: 'courier', fontSize: 6.5 },
+        2: { cellWidth: 65 },
+        3: { cellWidth: 22, halign: 'center' },
+        4: { cellWidth: 28 },
+        5: { cellWidth: 18, font: 'courier', fontSize: 6.5 },
+      },
     })
 
-    yPos += 15
-    drawBox(margin, yPos, pageWidth - 2 * margin, 30, COLORS.primary)
-    doc.setFontSize(14)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...COLORS.white)
-    doc.text('www.partflow.net', pageWidth / 2, yPos + 13, { align: 'center' })
-    doc.setFontSize(10)
-    doc.setFont('helvetica', 'normal')
-    doc.text('Jetzt kostenlos Anfrage stellen →', pageWidth / 2, yPos + 23, { align: 'center' })
-
-    addFooter(doc, pageWidth, pageHeight, margin)
-
-    const totalPages = doc.internal.getNumberOfPages()
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i)
-      doc.setFontSize(8)
-      doc.setTextColor(...COLORS.gray)
-      doc.text(`Seite ${i} von ${totalPages}`, pageWidth - margin, pageHeight - 10, { align: 'right' })
-    }
-
-    const timestamp = new Date().toISOString().split('T')[0]
-    const safeName = (projektInfo.titel || 'RFQ').replace(/[^a-z0-9]/gi, '_').substring(0, 30)
-    doc.save(`RFQ_Triage_${safeName}_${timestamp}.pdf`)
-
-    return { success: true }
-  } catch (error) {
-    console.error('RFQ PDF Error:', error)
-    throw new Error(`PDF-Generierung fehlgeschlagen: ${error.message}`)
+    y = doc.lastAutoTable.finalY + 12
   }
-}
 
-function addFooter(doc, pageWidth, pageHeight, margin) {
-  doc.setFillColor(240, 240, 240)
-  doc.rect(0, pageHeight - 25, pageWidth, 25, 'F')
-  doc.setFontSize(8)
-  doc.setTextColor(100, 100, 100)
+  // ─────────────────────────────────────────
+  // SEITE 2: LIEFERBEDINGUNGEN + OFFENE FRAGEN
+  // ─────────────────────────────────────────
+  addStandardFooter(doc, 'RFQ Triage Analyse')
+  doc.addPage()
+  y = 18
+
+  doc.setFillColor(...C.orange)
+  doc.rect(0, 0, W, 12, 'F')
+  doc.setFontSize(9)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(...C.white)
+  doc.text('Lieferbedingungen, Anforderungen & Offene Fragen', M, 8)
+  y = 22
+
+  // Lieferbedingungen
+  const lieferFelder = [
+    ['Liefertermin',   lieferbedingungen.liefertermin],
+    ['Lieferort',      lieferbedingungen.lieferort],
+    ['Incoterms',      lieferbedingungen.incoterms],
+    ['Verpackung',     lieferbedingungen.verpackung],
+    ['Zahlungsziel',   lieferbedingungen.zahlungsziel],
+  ].filter(([, v]) => v && v !== 'null')
+
+  if (lieferFelder.length > 0) {
+    sectionTitle('Lieferbedingungen')
+    lieferFelder.forEach(([label, val]) => {
+      checkBreak(10)
+      doc.setFillColor(248, 248, 248)
+      doc.rect(M, y, W - 2 * M, 9, 'F')
+      doc.setFontSize(8.5)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(...C.black)
+      doc.text(label + ':', M + 5, y + 6)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(...C.gray)
+      doc.text(String(val), M + 40, y + 6)
+      y += 12
+    })
+    y += 4
+  }
+
+  // Technische Anforderungen
+  if (technischeAnforderungen.length > 0) {
+    checkBreak(20)
+    sectionTitle('Technische Anforderungen')
+    technischeAnforderungen.forEach(req => {
+      checkBreak(9)
+      doc.setFontSize(8.5)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(...C.black)
+      const lines = doc.splitTextToSize('- ' + req, W - 2 * M - 5)
+      doc.text(lines, M + 5, y)
+      y += lines.length * 5 + 2
+    })
+    y += 6
+  }
+
+  // Offene Fragen
+  if (offeneFragen.length > 0) {
+    checkBreak(20)
+    sectionTitle('Offene Fragen vor Angebotsabgabe')
+    offeneFragen.forEach((frage, idx) => {
+      checkBreak(14)
+      doc.setFillColor(255, 251, 235)
+      doc.setDrawColor(...C.amber)
+      doc.setLineWidth(0.3)
+      const fragenLines = doc.splitTextToSize(frage, W - 2 * M - 16)
+      const boxH = fragenLines.length * 5 + 6
+      doc.rect(M, y, W - 2 * M, boxH, 'FD')
+      doc.setFontSize(8.5)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(...C.amber)
+      doc.text(`${idx + 1}.`, M + 5, y + boxH / 2 + 2)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(...C.black)
+      doc.text(fragenLines, M + 14, y + 5)
+      y += boxH + 3
+    })
+  }
+
+  // ─────────────────────────────────────────
+  // LETZTE SEITE: PARTFLOW EMPFEHLUNG & CTA
+  // ─────────────────────────────────────────
+  addStandardFooter(doc, 'RFQ Triage Analyse')
+  doc.addPage()
+  y = 0
+
+  // Voll-Blau-Header
+  doc.setFillColor(...C.blue)
+  doc.rect(0, 0, W, 46, 'F')
+
+  if (logoDataUrl) {
+    doc.addImage(logoDataUrl, 'PNG', M, 9, LOGO_PDF.w, LOGO_PDF.h)
+  }
+
+  doc.setFontSize(20)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(...C.white)
+  doc.text('Naechste Schritte', W / 2, 20, { align: 'center' })
+  doc.setFontSize(9.5)
   doc.setFont('helvetica', 'normal')
-  doc.text('© 2025 Partflow.net — Powered by DFSC Engineering', margin, pageHeight - 12)
-  doc.text('info@partflow.net | +49 6331 7296114', pageWidth / 2, pageHeight - 12, { align: 'center' })
-  doc.text('www.partflow.net', pageWidth - margin, pageHeight - 12, { align: 'right' })
-  doc.setFontSize(7)
-  doc.setTextColor(120, 120, 120)
-  doc.text('AI Business OS — RFQ Triage Agent', pageWidth / 2, pageHeight - 6, { align: 'center' })
+  doc.text('Teile beschaffen mit Partflow.net', W / 2, 30, { align: 'center' })
+
+  y = 56
+
+  // Partflow-Empfehlung aus Analyse
+  if (partflowRelevanz.empfehlung) {
+    doc.setFillColor(235, 245, 255)
+    doc.setDrawColor(...C.blue)
+    doc.setLineWidth(0.4)
+    const pfLines = doc.splitTextToSize(partflowRelevanz.empfehlung, W - 2 * M - 16)
+    const pfH = pfLines.length * 5 + 12
+    doc.rect(M, y, W - 2 * M, pfH, 'FD')
+    doc.setFontSize(8.5)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(...C.black)
+    doc.text(pfLines, M + 8, y + 8)
+    y += pfH + 10
+  }
+
+  // Vorteile
+  const vorteile = [
+    ['24h Angebotszeit', 'Statt 5-15 Tage Wartezeit bei traditionellen Lieferanten'],
+    ['200+ Fertigungspartner', 'ISO-zertifiziert in 12 europaeischen Laendern'],
+    ['15-30% Kosteneinsparung', 'Durch Wettbewerb und optimierte Beschaffung'],
+    ['Ein Ansprechpartner', 'Statt 5+ Lieferanten gleichzeitig zu koordinieren'],
+    ['Standard- & Sonderteile', 'CNC, Blech, Kunststoff, Normteile und mehr'],
+  ]
+
+  vorteile.forEach(([title, desc]) => {
+    checkBreak(18)
+    doc.setFillColor(248, 248, 248)
+    doc.rect(M, y, W - 2 * M, 14, 'F')
+    doc.setFillColor(...C.blue)
+    doc.rect(M, y, 3, 14, 'F')
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(...C.black)
+    doc.text(title, M + 8, y + 6)
+    doc.setFontSize(7.5)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(...C.gray)
+    doc.text(desc, M + 8, y + 11)
+    y += 17
+  })
+
+  y += 6
+
+  // CTA-Banner
+  checkBreak(28)
+  doc.setFillColor(...C.orange)
+  doc.rect(M, y, W - 2 * M, 26, 'F')
+  doc.setFontSize(13)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(...C.white)
+  doc.text('www.partflow.net', W / 2, y + 11, { align: 'center' })
+  doc.setFontSize(9)
+  doc.setFont('helvetica', 'normal')
+  doc.text('info@partflow.net  |  +49 6331 7296114', W / 2, y + 20, { align: 'center' })
+
+  addStandardFooter(doc, 'RFQ Triage Analyse')
+  addPageNumbers(doc)
+
+  const ts = new Date().toISOString().split('T')[0]
+  const safeName = String(projektInfo.titel || 'RFQ').replace(/[^a-z0-9]/gi, '_').substring(0, 30)
+  doc.save(`Partflow_RFQ_Triage_${safeName}_${ts}.pdf`)
+
+  return { success: true }
 }

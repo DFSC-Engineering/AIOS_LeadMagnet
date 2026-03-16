@@ -13,8 +13,8 @@ export default function BomRiskDashboard({ bomData, fileName, onReset }) {
   const { assessments, stats, recommendations } = riskAnalysis
   const top10Critical = assessments.slice(0, 10)
 
-  const handleLeadSubmit = (leadData) => {
-    generateBomRiskPDF({ assessments, stats, recommendations, fileName })
+  const handleLeadSubmit = async (leadData) => {
+    await generateBomRiskPDF({ assessments, stats, recommendations, fileName })
     setShowLeadModal(false)
     setShowSuccessMessage(true)
     setTimeout(() => setShowSuccessMessage(false), 5000)

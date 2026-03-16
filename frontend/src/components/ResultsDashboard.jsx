@@ -45,9 +45,9 @@ export default function ResultsDashboard({ results, onReset }) {
     setShowLeadModal(true)
   }
 
-  const handleLeadSubmit = (leadData) => {
+  const handleLeadSubmit = async (leadData) => {
     // Generate and download PDF
-    generatePDF(results, leadData)
+    await generatePDF(results, leadData)
     
     // Close modal and show success message
     setShowLeadModal(false)
