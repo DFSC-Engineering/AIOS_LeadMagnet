@@ -152,7 +152,7 @@ exports.handler = async (event) => {
       headers: headers,
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 2000,
+        max_tokens: 4096,
         messages: [{ role: 'user', content: messageContent }]
       })
     })
