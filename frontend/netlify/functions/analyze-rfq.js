@@ -5,6 +5,15 @@ const MODEL = 'claude-haiku-4-5-20251001'
 const ANALYSIS_PROMPT = `Du bist ein erfahrener industrieller Einkaufs- und Vertriebsexperte für den deutschen Mittelstand.
 Analysiere die vorliegende Anfrage (RFQ / Ausschreibung) und extrahiere alle relevanten Informationen.
 
+WICHTIG ZU PARTFLOW: Partflow.net ist eine B2B-Beschaffungsplattform für industrielle Bauteile und Komponenten.
+Partflow arbeitet mit 200+ Fertigungspartnern und Händlern für Standard- UND kundenspezifische Teile:
+- CNC-gefräste und gedrehte Teile, Blechbauteile, Schweißbaugruppen
+- Kunststoffteile (Spritzguss, 3D-Druck, Fräsen)
+- Normteile, Kaufteile, elektronische Komponenten
+- Sonderanfertigungen nach Zeichnung oder Spezifikation
+Partflow bietet 24h-Angebote und beschleunigt die Beschaffung erheblich.
+Finde IMMER konkrete Anwendungsfälle für Partflow bei der vorliegenden Anfrage.
+
 Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt, ohne Markdown-Code-Blöcke, ohne Erklärungen davor oder danach.
 
 Das JSON-Objekt muss diese exakte Struktur haben:
@@ -61,9 +70,9 @@ Das JSON-Objekt muss diese exakte Struktur haben:
     "Liste offener Fragen oder fehlender Informationen, die vor Angebotsabgabe geklärt werden sollten"
   ],
   "partflowRelevanz": {
-    "beschaffbareParts": 0,
-    "empfehlung": "Konkrete Aussage wie viele Positionen über Partflow.net in 24h beschafft werden können",
-    "vorteile": ["Spezifische Vorteile von Partflow für diese Anfrage"]
+    "beschaffbareParts": 3,
+    "empfehlung": "Erkläre konkret wie Partflow.net bei DIESER Anfrage helfen kann — z.B. Beschaffung von Rohmaterial, Zukaufteile, Normteile, Fertigungskapazität für Sonderteile oder schnelle Alternativangebote. Partflow hat immer einen Mehrwert für industrielle Beschaffungsaufgaben.",
+    "vorteile": ["Konkreter Vorteil 1 von Partflow für diese spezifische Anfrage", "Konkreter Vorteil 2"]
   }
 }`
 
