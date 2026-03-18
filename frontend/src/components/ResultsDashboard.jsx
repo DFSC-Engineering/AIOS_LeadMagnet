@@ -218,7 +218,7 @@ export default function ResultsDashboard({ results, onReset }) {
         <div className="bg-white rounded-xl shadow-lg p-6 fade-in">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-              ROI mit Partflow
+              Einsparpotenzial mit Partflow
             </h3>
             <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
               <span className="text-2xl">⚡</span>
@@ -228,7 +228,7 @@ export default function ResultsDashboard({ results, onReset }) {
             {roi.roiMonths} Monate
           </p>
           <p className="text-sm text-gray-600">
-            ROI: {roi.roiPercent}% im ersten Jahr
+            Geschätzter Amortisationszeitraum
           </p>
         </div>
       </div>
@@ -405,52 +405,55 @@ export default function ResultsDashboard({ results, onReset }) {
 
       {/* ROI Projection */}
       <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl shadow-lg p-8 border-2 border-green-200 fade-in">
-        <h3 className="text-2xl font-bold text-gray-900 mb-6">
-          📊 ROI-Projektion mit Partflow.net
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">
+          📊 Einsparpotenzial-Schätzung mit Partflow.net
         </h3>
-        
+        <p className="text-sm text-gray-500 mb-6">
+          Auf Basis der eingegebenen Kennzahlen — tatsächliche Einsparungen hängen von Ihrem Prozess ab.
+        </p>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="bg-white rounded-lg p-6">
-            <p className="text-sm text-gray-600 mb-2">Geschätzte Einsparungen</p>
+            <p className="text-sm text-gray-600 mb-2">Geschätztes Einsparpotenzial</p>
             <p className="text-3xl font-bold text-green-600">
               {formatCurrency(roi.estimatedAnnualSavings)}
             </p>
-            <p className="text-sm text-gray-600 mt-1">pro Jahr (70% Reduktion)</p>
+            <p className="text-sm text-gray-600 mt-1">pro Jahr (ca. 35% der Reibungskosten)</p>
           </div>
 
           <div className="bg-white rounded-lg p-6">
-            <p className="text-sm text-gray-600 mb-2">Amortisationsdauer</p>
+            <p className="text-sm text-gray-600 mb-2">Geschätzte Amortisationsdauer</p>
             <p className="text-3xl font-bold text-primary-600">
               {roi.roiMonths} Monate
             </p>
-            <p className="text-sm text-gray-600 mt-1">Setup-Kosten: {formatCurrency(roi.setupCost)}</p>
+            <p className="text-sm text-gray-600 mt-1">Einmalige Integrationskosten: ca. {formatCurrency(roi.setupCost)}</p>
           </div>
         </div>
 
         <div className="bg-white rounded-lg p-6">
           <h4 className="font-semibold text-gray-900 mb-3">
-            Warum Partflow.net?
+            Was Partflow.net konkret bietet:
           </h4>
           <ul className="space-y-2 text-sm text-gray-700">
             <li className="flex items-start gap-2">
               <span className="text-green-600 font-bold mt-0.5">✓</span>
-              <span><strong>24h Angebotszeit</strong> statt 5-15 Tage Wartezeit</span>
+              <span><strong>Angebote in 24h</strong> — über 200+ geprüfte Fertigungspartner in Europa</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-green-600 font-bold mt-0.5">✓</span>
-              <span><strong>Ein Ansprechpartner</strong> statt 5+ Lieferanten</span>
+              <span><strong>Ein Ansprechpartner</strong> koordiniert mehrere Lieferanten für Sie</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-green-600 font-bold mt-0.5">✓</span>
-              <span><strong>Direkte CAD-Integration</strong> eliminiert manuelles Abtippen</span>
+              <span><strong>CAD-Dateien direkt einreichbar</strong> (STEP, DXF) — keine manuelle Dateneingabe</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-green-600 font-bold mt-0.5">✓</span>
-              <span><strong>200+ ISO-zertifizierte Partner</strong> in 12 europäischen Ländern</span>
+              <span><strong>Transparente Preisgestaltung</strong> — vergleichbare Angebote ohne Maverick Spend</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-green-600 font-bold mt-0.5">✓</span>
-              <span><strong>15-30% Kosteneinsparungen</strong> durch optimierte Beschaffung</span>
+              <span className="text-gray-400 font-bold mt-0.5">i</span>
+              <span className="text-gray-500">Tatsächliche Einsparungen variieren je nach Beschaffungsvolumen und Prozessreifegrad</span>
             </li>
           </ul>
         </div>

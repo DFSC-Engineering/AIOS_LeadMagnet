@@ -145,8 +145,12 @@ export default function RfqAnalysisDashboard({ analysisResult, onReset }) {
           <div className="text-sm text-gray-600 font-medium">Positionen erkannt</div>
         </div>
         <div className="bg-white rounded-xl shadow-lg p-5 text-center">
-          <div className="text-3xl font-bold text-green-600 mb-1">{partflowRelevanz.beschaffbareParts || positionen.length}</div>
-          <div className="text-sm text-gray-600 font-medium">Via Partflow beschaffbar</div>
+          <div className="text-3xl font-bold text-green-600 mb-1">
+            {typeof partflowRelevanz.beschaffbareParts === 'number' && partflowRelevanz.beschaffbareParts > 0
+              ? partflowRelevanz.beschaffbareParts
+              : partflowRelevanz.beschaffbareParts === 0 ? '—' : positionen.length}
+          </div>
+          <div className="text-sm text-gray-600 font-medium">Partflow-relevant</div>
         </div>
       </div>
 
@@ -319,7 +323,7 @@ export default function RfqAnalysisDashboard({ analysisResult, onReset }) {
             <div>
               <div className="font-bold text-lg">Teile über Partflow beschaffen</div>
               <div className="text-primary-100 text-sm mt-1">
-                {partflowRelevanz.beschaffbareParts || positionen.length} Positionen • 24h Angebot • 200+ Lieferanten
+                24h Angebot • 200+ geprüfte Fertigungspartner
               </div>
             </div>
             <div className="ml-auto text-2xl group-hover:translate-x-1 transition-transform">→</div>
@@ -354,17 +358,17 @@ export default function RfqAnalysisDashboard({ analysisResult, onReset }) {
             <div className="ml-auto text-2xl group-hover:translate-x-1 transition-transform">→</div>
           </button>
 
-          {/* Demo Buchen */}
+          {/* Beratung anfragen */}
           <a
-            href="https://www.dfsc-engineering.de"
+            href="https://www.partflow.net"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-4 bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900 text-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all group"
           >
             <div className="text-4xl">📞</div>
             <div>
-              <div className="font-bold text-lg">Partflow Demo buchen</div>
-              <div className="text-gray-300 text-sm mt-1">Kostenlose Beratung anfragen</div>
+              <div className="font-bold text-lg">Beratung bei Partflow anfragen</div>
+              <div className="text-gray-300 text-sm mt-1">Kostenlos & unverbindlich</div>
             </div>
             <div className="ml-auto text-2xl group-hover:translate-x-1 transition-transform">→</div>
           </a>

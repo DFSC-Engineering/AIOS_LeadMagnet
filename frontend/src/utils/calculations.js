@@ -32,7 +32,7 @@ export function calculateCostOfFriction(formData) {
     engineerHourlyRate * 
     12
 
-  const opportunityCostPerYear = rfqAdminCostPerYear * 0.5 // Simplified: lost innovation time
+  const opportunityCostPerYear = rfqAdminCostPerYear * 0.25 // ~25% Opportunitätskosten: Ingenieurzeit für Administration statt Kerngeschäft
 
   const etoTotalCost = rfqAdminCostPerYear + opportunityCostPerYear
 
@@ -85,9 +85,15 @@ export function calculateCostOfFriction(formData) {
   const newMargin = targetMargin + potentialMarginGain
 
   // ===== ROI PROJECTION (Partflow.net) =====
-  const estimatedAnnualSavings = totalCostOfFriction * 0.70 // 70% reduction
-  const estimatedSetupCost = 5000 // One-time setup
-  const monthlySubscriptionCost = 0 // Partflow.net is free
+  // Realistisches Einsparpotenzial: Partflow adressiert direkt Beschaffungs- und Prozesskosten.
+  // Dark Purchasing (Lieferantenkonsolidierung, Maverick Spend): ~60% Potenzial
+  // PDF-Falle (CAD-Upload, weniger manuelle Dateneingabe): ~40% Potenzial
+  // ETO-Engpass (schnellere Angebote durch Netzwerk): ~20% Potenzial
+  // BOM-Disconnect (bessere Quellenverfügbarkeit): ~15% Potenzial
+  // Gewichteter Durchschnitt über alle Cluster: ~30-40% → konservativ mit 35%
+  const estimatedAnnualSavings = totalCostOfFriction * 0.35 // 35% realistische Einsparung
+  const estimatedSetupCost = 5000 // Einmalige Integrationskosten (Schätzwert)
+  const monthlySubscriptionCost = 0 // Partflow.net ist kostenlos für Einkäufer
   const annualOngoingCost = monthlySubscriptionCost * 12
 
   const netAnnualSavings = estimatedAnnualSavings - annualOngoingCost
@@ -179,27 +185,27 @@ export function calculateCostOfFriction(formData) {
 function getSolutionForCluster(cluster) {
   const solutions = {
     etoEngpass: {
-      title: '24h Angebotszeit mit Partflow',
-      description: 'Automatisierte Angebotserstellung statt 5-15 Tage Wartezeit. Kostenlose DFM-Analyse reduziert Revisions-Zyklen um 40%.',
-      action: 'Partflow.net kostenlos testen',
+      title: 'Schnellere Angebote durch das Partflow-Netzwerk',
+      description: 'Anfragen direkt an 200+ geprüfte Fertigungspartner weiterleiten — Angebote in 24h statt 5-15 Tage Wartezeit. So sinkt der Administrationsaufwand pro RFQ spürbar.',
+      action: 'Partflow.net ansehen',
       link: 'https://www.partflow.net'
     },
     pdfTrap: {
-      title: 'Direkte CAD-Integration',
-      description: 'Akzeptiert STEP-Dateien für direkten Import. Automatische Fertigbarkeitsanalyse eliminiert manuelles Abtippen.',
-      action: 'CAD-Upload Demo ansehen',
+      title: 'CAD-Dateien direkt einreichen',
+      description: 'Partflow akzeptiert STEP, DXF und weitere CAD-Formate — keine manuelle Dateneingabe, keine Medienbrüche. Die automatische Fertigbarkeitsanalyse reduziert Rückfragen.',
+      action: 'Mehr erfahren auf Partflow.net',
       link: 'https://www.partflow.net'
     },
     darkPurchasing: {
-      title: 'Single Point of Contact',
-      description: 'Ein Ansprechpartner statt 5+ Lieferanten. Transparente Preisgestaltung und strukturierte Prozesse mit vollständiger Dokumentation.',
-      action: 'Beschaffung konsolidieren',
+      title: 'Lieferanten bündeln statt verteilen',
+      description: 'Ein Ansprechpartner bei Partflow koordiniert mehrere Fertigungspartner. Das reduziert Maverick Spend und schafft Transparenz über Preise und Lieferbedingungen.',
+      action: 'Beschaffung vereinfachen',
       link: 'https://www.partflow.net'
     },
     bomDisconnect: {
-      title: 'Frühe Machbarkeitsprüfung',
-      description: 'Proaktive Kommunikation bei Sourcing-Herausforderungen. Materialverfügbarkeit durch europäisches Partnernetzwerk mit 200+ Lieferanten.',
-      action: 'BOM-Check anfragen',
+      title: 'Frühe Verfügbarkeitsprüfung',
+      description: 'Partflow prüft Rohmaterial- und Komponentenverfügbarkeit im Netzwerk — bevor es zum Produktionsproblem wird. So lassen sich Redesign-Zyklen durch bessere Planungsgrundlagen verringern.',
+      action: 'Verfügbarkeit anfragen',
       link: 'https://www.partflow.net'
     }
   }

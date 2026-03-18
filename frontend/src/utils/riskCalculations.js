@@ -260,31 +260,32 @@ function assessObsolescence(part) {
 
 /**
  * Assess change frequency risk
+ * Hinweis: Da keine tatsächliche Änderungshistorie vorliegt, wird ein kategorie-basierter
+ * Schätzwert verwendet. Elektronische Bauteile haben erfahrungsgemäß kürzere Technologiezyklen,
+ * mechanische Standardteile sind stabiler. Der Faktor geht mit 10% in den Gesamtscore ein.
  */
 function assessChangeFrequency(part) {
-  // For now, use a heuristic based on part category
-  // In production, this would use actual change history
   const category = part.category?.toLowerCase() || ''
-  
+
   let score, level, changesPerYear, recommendation
-  
+
   if (category.includes('electronic') || category.includes('elektronik')) {
-    changesPerYear = 4
-    score = 75
-    level = 'MEDIUM'
-    recommendation = 'Häufige Änderungen erwartet - Implementieren Sie Change Management Prozess'
-  } else if (category.includes('custom') || category.includes('special')) {
     changesPerYear = 3
-    score = 60
+    score = 65
     level = 'MEDIUM'
-    recommendation = 'Gelegentliche Änderungen - Design Review empfohlen'
+    recommendation = 'Elektronische Bauteile haben kürzere Technologiezyklen — Change Management empfohlen'
+  } else if (category.includes('custom') || category.includes('special')) {
+    changesPerYear = 2
+    score = 50
+    level = 'MEDIUM'
+    recommendation = 'Kundenspezifische Teile können sich durch Designänderungen beim Kunden häufiger ändern'
   } else {
     changesPerYear = 1
-    score = 30
+    score = 25
     level = 'LOW'
-    recommendation = 'Stabiles Design - Wenige Änderungen erwartet'
+    recommendation = 'Standardisiertes Bauteil — Designänderungen eher selten'
   }
-  
+
   return {
     score,
     level,
@@ -336,16 +337,19 @@ function generatePartRecommendation(part, riskFactors, riskScore) {
 function estimateCosts(part, riskFactors, riskScore) {
   const annualValue = part.annualValue || 0
   
-  // Probability of disruption based on risk score
-  const disruptionProbability = riskScore / 100
-  
-  // Cost of production stoppage (assume 3 days at €5000/day)
-  const productionStoppageCost = 3 * 5000
-  
-  // Emergency procurement premium (30%)
-  const emergencyProcurementCost = annualValue * 0.30
-  
-  // Total cost of inaction
+  // Störungswahrscheinlichkeit: Risk Score 0-100 wird auf 0-20% Jahreswahrscheinlichkeit gemappt.
+  // Ein "kritisches" Teil (Score 90) hat ca. 18% Chance auf eine Lieferstörung pro Jahr —
+  // realistischer als die direkte 1:1-Übersetzung (Score 90 = 90% wäre viel zu aggressiv).
+  const disruptionProbability = (riskScore / 100) * 0.20
+
+  // Produktionsstillstand: geschätzt 2 Tage à €3.000/Tag (Richtwert für KMU-Fertigung)
+  // Kann je nach Unternehmenstyp stark abweichen — dient als Orientierungsgröße.
+  const productionStoppageCost = 2 * 3000
+
+  // Eilbeschaffungs-Aufpreis: ~25% bei ungeplanter Beschaffung
+  const emergencyProcurementCost = annualValue * 0.25
+
+  // Gesamtkosten des Nichtstuns (Erwartungswert)
   const costOfInaction = Math.round(
     disruptionProbability * (productionStoppageCost + emergencyProcurementCost)
   )
@@ -448,7 +452,7 @@ function generateOverallRecommendations(assessments, stats) {
   }
   
   // Single source recommendation
-  if (stats.keyIssues.singleSourceParts > 10) {
+  if (stats.keyIssues.singleSourceParts > 5) {
     recommendations.push({
       priority: 2,
       title: `${stats.keyIssues.singleSourceParts} Single-Source Bauteile identifiziert`,

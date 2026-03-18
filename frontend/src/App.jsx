@@ -93,7 +93,7 @@ function App() {
             ) : activeModule === 'bom' ? (
               <>🎯 Upload • Analyse • Report – Identifizieren Sie kritische Bauteile in Sekunden</>
             ) : (
-              <>🤖 PDF hochladen • KI analysiert • Teile über Partflow beschaffen</>
+              <>🤖 PDF hochladen • KI extrahiert alle Positionen • GO / MAYBE / NO-GO in Minuten</>
             )}
           </p>
 
@@ -162,7 +162,7 @@ function App() {
                 <div className="px-5 py-4">
                   <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Aufwand & Ergebnis</p>
                   <p className="text-sm text-gray-700 mb-2"><span className="font-semibold text-primary-600">~5 Minuten</span> Fragebogen ausfüllen</p>
-                  <p className="text-sm text-gray-700">Ergebnis: Mehrseitiger PDF-Report, sofort druckfertig — kostenlos als Lead-Magnet.</p>
+                  <p className="text-sm text-gray-700">Ergebnis: Mehrseitiger PDF-Report, sofort druckfertig — kostenlos und unverbindlich.</p>
                 </div>
               </div>
             </div>
@@ -198,7 +198,7 @@ function App() {
                 <div className="px-5 py-4">
                   <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Aufwand & Ergebnis</p>
                   <p className="text-sm text-gray-700 mb-2"><span className="font-semibold text-purple-600">~2 Minuten</span> Upload + Spalten-Mapping</p>
-                  <p className="text-sm text-gray-700">Ergebnis: Druckfertiger PDF-Report mit vollständiger Risikomatrix — kostenlos.</p>
+                  <p className="text-sm text-gray-700">Ergebnis: Druckfertiger PDF-Report mit vollständiger Risikomatrix — kostenlos und unverbindlich.</p>
                 </div>
               </div>
             </div>
