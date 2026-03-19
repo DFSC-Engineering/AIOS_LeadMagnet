@@ -50,6 +50,47 @@ export default function RfqAnalysisDashboard({ analysisResult, onReset }) {
 
   const cfg = triageConfig[empfehlung] || triageConfig.MAYBE
 
+  // ── Anfrage-Qualität berechnen (aus den extrahierten Feldern) ──
+  const calculateRfqQuality = () => {
+    let found = 0
+    let total = 0
+
+    // Projektinfo-Felder
+    ;[projektInfo.titel, projektInfo.kunde, projektInfo.angebotsFrist, projektInfo.ansprechpartner].forEach(v => {
+      total++
+      if (v && v !== 'Unbekannt' && v !== null && v !== 'null') found++
+    })
+
+    // Positionen vorhanden?
+    total++
+    if (positionen.length > 0) found++
+
+    // Material bei mindestens 50% der Positionen angegeben?
+    if (positionen.length > 0) {
+      total++
+      const withMaterial = positionen.filter(p => p.material && p.material !== 'null' && p.material !== null).length
+      if (withMaterial / positionen.length >= 0.5) found++
+    }
+
+    // Lieferbedingungen
+    ;[lieferbedingungen.liefertermin, lieferbedingungen.lieferort].forEach(v => {
+      total++
+      if (v && v !== 'null') found++
+    })
+
+    // Technische Anforderungen
+    total++
+    if (technischeAnforderungen.length > 0) found++
+
+    const percent = total > 0 ? Math.round((found / total) * 100) : 0
+
+    if (percent >= 80) return { label: 'Vollständig',    color: 'text-green-600',  bg: 'bg-green-50',  border: 'border-green-200',  dot: 'bg-green-500',  percent }
+    if (percent >= 60) return { label: 'Gut strukturiert', color: 'text-blue-600',  bg: 'bg-blue-50',   border: 'border-blue-200',   dot: 'bg-blue-500',   percent }
+    if (percent >= 40) return { label: 'Lückenhaft',      color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-200', dot: 'bg-orange-500', percent }
+    return               { label: 'Unklar',           color: 'text-red-600',    bg: 'bg-red-50',    border: 'border-red-200',    dot: 'bg-red-500',    percent }
+  }
+  const rfqQuality = calculateRfqQuality()
+
   const handleLeadSubmit = async (leadData) => {
     await generateRfqPDF(analysisResult, leadData)
     setShowLeadModal(false)
@@ -131,19 +172,31 @@ export default function RfqAnalysisDashboard({ analysisResult, onReset }) {
 
       {/* Metriken-Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl shadow-lg p-5 text-center">
-          <div className="text-3xl font-bold text-orange-600 mb-1">{triage.winWahrscheinlichkeit || '—'}%</div>
-          <div className="text-sm text-gray-600 font-medium">Win-Wahrscheinlichkeit</div>
+
+        {/* Anfrage-Qualität (ersetzt Win-Wahrscheinlichkeit) */}
+        <div className={`bg-white rounded-xl shadow-lg p-5 text-center border-2 ${rfqQuality.border}`}>
+          <div className={`text-xl font-bold ${rfqQuality.color} mb-1 leading-tight`}>{rfqQuality.label}</div>
+          <div className="text-sm text-gray-600 font-medium">Anfrage-Qualität</div>
+          <div className="mt-2 w-full bg-gray-100 rounded-full h-1.5">
+            <div
+              className={`h-1.5 rounded-full ${rfqQuality.dot}`}
+              style={{ width: `${rfqQuality.percent}%` }}
+            />
+          </div>
+          <div className="text-xs text-gray-400 mt-1">{rfqQuality.percent}% Felder ausgefüllt</div>
         </div>
+
         <div className="bg-white rounded-xl shadow-lg p-5 text-center">
           <div className="text-3xl font-bold text-gray-900 mb-1">{triage.aufwandsSchaetzung?.stunden || '—'}h</div>
           <div className="text-sm text-gray-600 font-medium">Geschätzter Aufwand</div>
           <div className="text-xs text-gray-400 mt-1">{triage.aufwandsSchaetzung?.komplexitaet}</div>
         </div>
+
         <div className="bg-white rounded-xl shadow-lg p-5 text-center">
           <div className="text-3xl font-bold text-purple-600 mb-1">{positionen.length}</div>
           <div className="text-sm text-gray-600 font-medium">Positionen erkannt</div>
         </div>
+
         <div className="bg-white rounded-xl shadow-lg p-5 text-center">
           <div className="text-3xl font-bold text-green-600 mb-1">
             {typeof partflowRelevanz.beschaffbareParts === 'number' && partflowRelevanz.beschaffbareParts > 0
@@ -152,6 +205,7 @@ export default function RfqAnalysisDashboard({ analysisResult, onReset }) {
           </div>
           <div className="text-sm text-gray-600 font-medium">Partflow-relevant</div>
         </div>
+
       </div>
 
       {/* Positionen-Tabelle */}
