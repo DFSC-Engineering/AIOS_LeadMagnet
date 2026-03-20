@@ -75,7 +75,7 @@ function App() {
             ) : activeModule === 'bom' ? (
               <>BOM Risk Sentinel: <span className="text-purple-600">Lieferketten-Risiken</span> in Stücklisten identifizieren</>
             ) : (
-              <>RFQ Triage Agent: Anfragen in <span className="text-orange-600">Minuten analysieren</span></>
+              <>RFQ Triage Agent: Anfragen in <span className="text-blue-700">Minuten analysieren</span></>
             )}
           </h1>
           <p className="text-xl text-gray-600 mb-4 max-w-3xl mx-auto">
@@ -123,7 +123,7 @@ function App() {
               onClick={() => handleModuleSwitch('rfq')}
               className={`px-6 py-3 rounded-lg font-semibold shadow-md transition-all ${
                 activeModule === 'rfq'
-                  ? 'bg-orange-600 text-white'
+                  ? 'bg-blue-700 text-white'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
@@ -205,12 +205,12 @@ function App() {
           )}
 
           {activeModule === 'rfq' && (
-            <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-md border border-orange-100 overflow-hidden text-left mb-2">
-              <div className="bg-orange-600 px-6 py-3 flex items-center gap-3">
+            <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-md border border-blue-100 overflow-hidden text-left mb-2">
+              <div className="bg-blue-700 px-6 py-3 flex items-center gap-3">
                 <span className="text-2xl">🚀</span>
                 <div>
                   <p className="text-white font-bold text-lg leading-tight">RFQ Triage Agent</p>
-                  <p className="text-orange-100 text-sm">Anfragen in Minuten bewerten — GO oder NO-GO, bevor Sie einen Stift ansetzen</p>
+                  <p className="text-blue-100 text-sm">Anfragen in Minuten bewerten — GO oder NO-GO, bevor Sie einen Stift ansetzen</p>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-100">
@@ -233,7 +233,7 @@ function App() {
                 </div>
                 <div className="px-5 py-4">
                   <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Aufwand & Ergebnis</p>
-                  <p className="text-sm text-gray-700 mb-2"><span className="font-semibold text-orange-600">~1 Minute</span> Upload + KI-Analyse</p>
+                  <p className="text-sm text-gray-700 mb-2"><span className="font-semibold text-blue-700">~1 Minute</span> Upload + KI-Analyse</p>
                   <p className="text-sm text-gray-700">Ergebnis: Strukturierte Triage-Analyse mit PDF-Report und KI-generiertem Antwort-Entwurf.</p>
                 </div>
               </div>

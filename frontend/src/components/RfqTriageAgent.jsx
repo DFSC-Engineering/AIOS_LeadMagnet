@@ -28,8 +28,8 @@ function AnalyzingScreen() {
   return (
     <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-12 text-center">
       <div className="mb-8">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-orange-100 rounded-full mb-6">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-orange-600"></div>
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-6">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-700"></div>
         </div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">KI analysiert Ihre Anfrage</h2>
         <p className="text-gray-500">Claude liest und strukturiert das Dokument...</p>
@@ -45,15 +45,15 @@ function AnalyzingScreen() {
                 </svg>
               </div>
             ) : idx === currentStep ? (
-              <div className="w-6 h-6 border-2 border-orange-500 rounded-full flex items-center justify-center flex-shrink-0 animate-pulse">
-                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+              <div className="w-6 h-6 border-2 border-blue-600 rounded-full flex items-center justify-center flex-shrink-0 animate-pulse">
+                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
               </div>
             ) : (
               <div className="w-6 h-6 border-2 border-gray-200 rounded-full flex-shrink-0"></div>
             )}
             <span className={`text-sm ${
               idx < currentStep ? 'text-green-700 font-medium line-through' :
-              idx === currentStep ? 'text-orange-700 font-semibold' : 'text-gray-400'
+              idx === currentStep ? 'text-blue-700 font-semibold' : 'text-gray-400'
             }`}>
               {step.label}
             </span>
@@ -61,9 +61,9 @@ function AnalyzingScreen() {
         ))}
       </div>
 
-      <div className="mt-8 bg-orange-50 rounded-lg p-4">
-        <p className="text-sm text-orange-700">
-          <strong>Tipp:</strong> Claude erkennt Positionen, Materialien, Toleranzen und Lieferanforderungen
+      <div className="mt-8 bg-blue-50 rounded-lg p-4">
+        <p className="text-sm text-blue-700">
+          <strong>Tipp:</strong> Die KI erkennt Positionen, Materialien, Toleranzen und Lieferanforderungen
           direkt aus Ihrem Dokument — ohne manuelle Eingabe.
         </p>
       </div>
@@ -135,7 +135,7 @@ export default function RfqTriageAgent() {
           </p>
           <button
             onClick={handleReset}
-            className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all"
+            className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all"
           >
             ← Nochmal versuchen
           </button>

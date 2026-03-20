@@ -86,7 +86,7 @@ export default function RfqAnalysisDashboard({ analysisResult, onReset }) {
 
     if (percent >= 80) return { label: 'Vollständig',    color: 'text-green-600',  bg: 'bg-green-50',  border: 'border-green-200',  dot: 'bg-green-500',  percent }
     if (percent >= 60) return { label: 'Gut strukturiert', color: 'text-blue-600',  bg: 'bg-blue-50',   border: 'border-blue-200',   dot: 'bg-blue-500',   percent }
-    if (percent >= 40) return { label: 'Lückenhaft',      color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-200', dot: 'bg-orange-500', percent }
+    if (percent >= 40) return { label: 'Lückenhaft',      color: 'text-amber-600',  bg: 'bg-amber-50',  border: 'border-amber-200',  dot: 'bg-amber-500',  percent }
     return               { label: 'Unklar',           color: 'text-red-600',    bg: 'bg-red-50',    border: 'border-red-200',    dot: 'bg-red-500',    percent }
   }
   const rfqQuality = calculateRfqQuality()
@@ -121,15 +121,15 @@ export default function RfqAnalysisDashboard({ analysisResult, onReset }) {
     <div className="max-w-7xl mx-auto space-y-8">
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-600 to-amber-600 rounded-xl shadow-2xl p-8 text-white">
+      <div className="bg-gradient-to-r from-blue-700 to-blue-900 rounded-xl shadow-2xl p-8 text-white">
         <div className="flex justify-between items-start">
           <div>
-            <h2 className="text-4xl font-bold mb-2">🤖 RFQ Triage Analyse</h2>
-            <p className="text-orange-100 text-lg">
+            <h2 className="text-4xl font-bold mb-2">RFQ Triage Analyse</h2>
+            <p className="text-blue-100 text-lg">
               {projektInfo.titel || 'Anfrage'} — {projektInfo.kunde || 'Unbekannter Auftraggeber'}
             </p>
             {projektInfo.angebotsFrist && (
-              <p className="text-orange-200 text-sm mt-1">Angebotsfrist: {projektInfo.angebotsFrist}</p>
+              <p className="text-blue-200 text-sm mt-1">Angebotsfrist: {projektInfo.angebotsFrist}</p>
             )}
           </div>
           <button
@@ -214,7 +214,7 @@ export default function RfqAnalysisDashboard({ analysisResult, onReset }) {
           <h3 className="text-2xl font-bold text-gray-900 mb-6">📋 Extrahierte Positionen ({positionen.length})</h3>
           <div className="overflow-x-auto">
             <table className="min-w-full">
-              <thead className="bg-orange-50">
+              <thead className="bg-blue-50">
                 <tr>
                   <th className="px-4 py-3 text-left font-semibold text-gray-700">Pos.</th>
                   <th className="px-4 py-3 text-left font-semibold text-gray-700">Teilenummer</th>
@@ -387,14 +387,14 @@ export default function RfqAnalysisDashboard({ analysisResult, onReset }) {
           <button
             onClick={handleGenerateResponse}
             disabled={isGeneratingResponse}
-            className="flex items-center gap-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all group disabled:opacity-60"
+            className="flex items-center gap-4 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all group disabled:opacity-60"
           >
             <div className="text-4xl">{isGeneratingResponse ? '⏳' : '✍️'}</div>
             <div className="text-left">
               <div className="font-bold text-lg">
                 {isGeneratingResponse ? 'Wird generiert...' : 'Antwort-Template generieren'}
               </div>
-              <div className="text-orange-100 text-sm mt-1">KI-Entwurf in Deutsch erstellen</div>
+              <div className="text-blue-100 text-sm mt-1">KI-Entwurf in Deutsch erstellen</div>
             </div>
             <div className="ml-auto text-2xl group-hover:translate-x-1 transition-transform">→</div>
           </button>
@@ -441,9 +441,9 @@ export default function RfqAnalysisDashboard({ analysisResult, onReset }) {
       {showResponseModal && responseTemplate && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
-            <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white p-6 rounded-t-2xl flex justify-between items-center">
+            <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white p-6 rounded-t-2xl flex justify-between items-center">
               <h3 className="text-xl font-bold">✍️ KI-generierter Antwort-Entwurf</h3>
-              <button onClick={() => setShowResponseModal(false)} className="text-white hover:text-orange-200 text-2xl font-bold">×</button>
+              <button onClick={() => setShowResponseModal(false)} className="text-white hover:text-blue-200 text-2xl font-bold">×</button>
             </div>
             <div className="p-6">
               <div className="bg-gray-50 rounded-lg p-4 mb-4">
@@ -455,7 +455,7 @@ export default function RfqAnalysisDashboard({ analysisResult, onReset }) {
                     navigator.clipboard.writeText(responseTemplate)
                     alert('Text in Zwischenablage kopiert!')
                   }}
-                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded-lg transition-all"
+                  className="flex-1 bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-lg transition-all"
                 >
                   📋 In Zwischenablage kopieren
                 </button>
